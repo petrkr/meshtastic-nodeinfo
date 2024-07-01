@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Info Table</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Device Info Table</h1>
+    <table id="infoTable">
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>Long Name</th>
+                <th>Short Name</th>
+                <th>MAC Address</th>
+                <th>HW Model</th>
+                <th>Role</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>Altitude</th>
+                <th>Time</th>
+                <th>Last Heard</th>
+                <th>Battery Level</th>
+                <th>Channel Utilization</th>
+                <th>Air Util Tx</th>
+                <th>Uptime Seconds</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('info.json')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#infoTable tbody');
+                    const nodes = data.nodes;
+
+                    for (const nodeId in nodes) {
+                        if (nodes.hasOwnProperty(nodeId)) {
+                            const node = nodes[nodeId];
+                            const position = node.position;
+                            const metrics = node.deviceMetrics;
+                            const user = node.user;
+
+                            const row = document.createElement('tr');
+
+                            const userIdCell = document.createElement('td');
+                            userIdCell.textContent = user.id;
+                            row.appendChild(userIdCell);
+
+                            const longNameCell = document.createElement('td');
+                            longNameCell.textContent = user.longName;
+                            row.appendChild(longNameCell);
+
+                            const shortNameCell = document.createElement('td');
+                            shortNameCell.textContent = user.shortName;
+                            row.appendChild(shortNameCell);
+
+                            const macaddrCell = document.createElement('td');
+                            macaddrCell.textContent = user.macaddr;
+                            row.appendChild(macaddrCell);
+
+                            const hwModelCell = document.createElement('td');
+                            hwModelCell.textContent = user.hwModel;
+                            row.appendChild(hwModelCell);
+
+                            const roleCell = document.createElement('td');
+                            roleCell.textContent = user.role;
+                            row.appendChild(roleCell);
+
+                            const latitudeCell = document.createElement('td');
+                            const longitudeCell = document.createElement('td');
+                            const timeCell = document.createElement('td');
+                            const altitudeCell = document.createElement('td');
+
+                            if (position) {
+                                const latitudeLink = document.createElement('a');
+                                latitudeLink.href = `https://www.google.com/maps?q=${position.latitude},${position.longitude}`;
+                                latitudeLink.target = '_blank';
+                                latitudeLink.textContent = position.latitude || 'N/A';
+                                latitudeCell.appendChild(latitudeLink);
+                            
+                                const longitudeLink = document.createElement('a');
+                                longitudeLink.href = `https://www.google.com/maps?q=${position.latitude},${position.longitude}`;
+                                longitudeLink.target = '_blank';
+                                longitudeLink.textContent = position.longitude || 'N/A';
+                                longitudeCell.appendChild(longitudeLink)
+                            
+                                altitudeCell.textContent = position.altitude || 'N/A';
+
+                                const timeDate = new Date(position.time * 1000);
+                                timeCell.textContent = timeDate.toLocaleString();
+                            } else {
+                                latitudeCell.textContent = 'N/A';
+                                longitudeCell.textContent = 'N/A';
+                                altitudeCell.textContent = 'N/A';
+                                timeCell.textContent = 'N/A';
+                            }
+
+                            row.appendChild(latitudeCell);
+                            row.appendChild(longitudeCell);
+                            row.appendChild(altitudeCell);
+                            row.appendChild(timeCell);
+
+                            const lastHeardCell = document.createElement('td');
+                            const lastHeardDate = new Date(node.lastHeard * 1000);
+                            lastHeardCell.textContent = lastHeardDate.toLocaleString();
+                            row.appendChild(lastHeardCell);
+
+                            const batteryLevelCell = document.createElement('td');
+                            const channelUtilizationCell = document.createElement('td');
+                            const airUtilTxCell = document.createElement('td');
+                            const uptimeSecondsCell = document.createElement('td');
+
+                            if (metrics) {
+                                if (metrics.batteryLevel !== undefined) {
+                                    const batteryProgress = document.createElement('progress');
+                                    batteryProgress.value = metrics.batteryLevel;
+                                    batteryProgress.max = 100;
+                                    batteryLevelCell.appendChild(batteryProgress);
+                                    batteryLevelCell.appendChild(document.createTextNode(` ${metrics.batteryLevel}%`));
+                                } else {
+                                    batteryLevelCell.textContent = 'N/A';
+                                }
+                                channelUtilizationCell.textContent = metrics.channelUtilization || 'N/A';
+                                airUtilTxCell.textContent = metrics.airUtilTx || 'N/A';                                
+                                uptimeSecondsCell.textContent = metrics.uptimeSeconds || 'N/A';
+                            }
+
+                            row.appendChild(batteryLevelCell);
+                            row.appendChild(channelUtilizationCell);
+                            row.appendChild(airUtilTxCell);
+                            row.appendChild(uptimeSecondsCell);
+                                
+
+                            tableBody.appendChild(row);
+                        }
+                    }
+                })
+                .catch(error => console.error('Error loading JSON:', error));
+        });
+    </script>
+</body>
+</html>
