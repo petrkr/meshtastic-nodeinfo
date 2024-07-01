@@ -86,6 +86,22 @@
             }
         }
 
+        function createMeter(node, level, low = 20, optimum = 90, high = 70, min = 0, max = 100) {
+            if (level) {
+                const meter = document.createElement('meter');
+                meter.value = level;
+                meter.max = max;
+                meter.low = low;
+                meter.optimum = optimum;
+                meter.high = high;
+
+                node.appendChild(meter);
+                node.appendChild(document.createTextNode(` ${level}%`));
+            } else {
+                node.textContent = 'N/A';
+            }
+        }
+
         function processMetadata(data) {
             document.querySelector('#firmwareVersion').textContent = data.metadata.firmwareVersion;
             document.querySelector('#deviceStateVersion').textContent = data.metadata.deviceStateVersion;
@@ -188,7 +204,7 @@
                     const uptimeSecondsCell = document.createElement('td');
 
                     if (metrics) {
-                        createProgressBar(batteryLevelCell, metrics.batteryLevel);
+                        createMeter(batteryLevelCell, metrics.batteryLevel);
                         createProgressBar(channelUtilizationCell, metrics.channelUtilization);
                         createProgressBar(airUtilTxCell, metrics.airUtilTx);
                         uptimeSecondsCell.textContent = metrics.uptimeSeconds || 'N/A';
