@@ -108,18 +108,24 @@
                             const altitudeCell = document.createElement('td');
 
                             if (position) {
-                                const latitudeLink = document.createElement('a');
-                                latitudeLink.href = `https://www.google.com/maps?q=${position.latitude},${position.longitude}`;
-                                latitudeLink.target = '_blank';
-                                latitudeLink.textContent = position.latitude || 'N/A';
-                                latitudeCell.appendChild(latitudeLink);
-                            
-                                const longitudeLink = document.createElement('a');
-                                longitudeLink.href = `https://www.google.com/maps?q=${position.latitude},${position.longitude}`;
-                                longitudeLink.target = '_blank';
-                                longitudeLink.textContent = position.longitude || 'N/A';
-                                longitudeCell.appendChild(longitudeLink)
-                            
+                                if (position.latitude && position.longitude) {
+                                    const latitudeLink = document.createElement('a');
+                                    latitudeLink.href = `https://www.google.com/maps?q=${position.latitude},${position.longitude}`;
+                                    latitudeLink.target = '_blank';
+                                    latitudeLink.textContent = position.latitude || 'N/A';
+                                    latitudeCell.appendChild(latitudeLink);
+
+                                    const longitudeLink = document.createElement('a');
+                                    longitudeLink.href = `https://www.google.com/maps?q=${position.latitude},${position.longitude}`;
+                                    longitudeLink.target = '_blank';
+                                    longitudeLink.textContent = position.longitude || 'N/A';
+                                    longitudeCell.appendChild(longitudeLink)
+                                }
+                                else {
+                                    longitudeCell.textContent = 'N/A';
+                                    latitudeCell.textContent = 'N/A';
+                                }
+
                                 altitudeCell.textContent = position.altitude || 'N/A';
 
                                 const timeDate = new Date(position.time * 1000);
