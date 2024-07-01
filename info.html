@@ -45,6 +45,23 @@
     </table>
 
     <script>
+        function formatTimeAgo(lastHeardTimestamp) {
+            const lastHeardDate = new Date(lastHeardTimestamp * 1000);
+            const secondsAgo = Math.floor((Date.now() - lastHeardDate.getTime()) / 1000);
+
+            if (secondsAgo < 60) {
+                return `${secondsAgo} second${secondsAgo !== 1 ? 's' : ''} ago`;
+            } else if (secondsAgo < 3600) {
+                const minutesAgo = Math.floor(secondsAgo / 60);
+                return `${minutesAgo} minute${minutesAgo !== 1 ? 's' : ''} ago`;
+            } else if (secondsAgo < 86400) {
+                const hoursAgo = Math.floor(secondsAgo / 3600);
+                return `${hoursAgo} hour${hoursAgo !== 1 ? 's' : ''} ago`;
+            } else {
+                return lastHeardDate.toLocaleString();
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             fetch('info.json')
                 .then(response => response.json())
@@ -120,8 +137,7 @@
                             row.appendChild(timeCell);
 
                             const lastHeardCell = document.createElement('td');
-                            const lastHeardDate = new Date(node.lastHeard * 1000);
-                            lastHeardCell.textContent = lastHeardDate.toLocaleString();
+                            lastHeardCell.textContent = formatTimeAgo(node.lastHeard)
                             row.appendChild(lastHeardCell);
 
                             const batteryLevelCell = document.createElement('td');
