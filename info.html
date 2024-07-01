@@ -39,6 +39,8 @@
                 <th>MAC Address</th>
                 <th>HW Model</th>
                 <th>Role</th>
+                <th>SNR</th>
+                <th>Hops</th>
                 <th>Latitude</th>
                 <th>Longitude</th>
                 <th>Altitude</th>
@@ -127,6 +129,14 @@
                     const roleCell = document.createElement('td');
                     roleCell.textContent = user.role;
                     row.appendChild(roleCell);
+
+                    const snrCell = document.createElement('td');
+                    snrCell.textContent = node.snr;
+                    row.appendChild(snrCell);
+
+                    const hopsCell = document.createElement('td');
+                    hopsCell.textContent = node.hopsAway;
+                    row.appendChild(hopsCell);
 
                     const latitudeCell = document.createElement('td');
                     const longitudeCell = document.createElement('td');
