@@ -166,8 +166,8 @@
 
                             if (metrics) {
                                 createProgressBar(batteryLevelCell, metrics.batteryLevel);
-                                channelUtilizationCell.textContent = metrics.channelUtilization || 'N/A';
-                                airUtilTxCell.textContent = metrics.airUtilTx || 'N/A';                                
+                                createProgressBar(channelUtilizationCell, metrics.channelUtilization);
+                                createProgressBar(airUtilTxCell, metrics.airUtilTx);
                                 uptimeSecondsCell.textContent = metrics.uptimeSeconds || 'N/A';
                             }
 
