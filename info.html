@@ -62,6 +62,19 @@
             }
         }
 
+        function createProgressBar(node, level, max = 100) {
+            if (level) {
+                const progress = document.createElement('progress');
+                progress.value = level;
+                progress.max = max;
+
+                node.appendChild(progress);
+                node.appendChild(document.createTextNode(` ${level}%`));
+            } else {
+                node.textContent = 'N/A';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             fetch('info.json')
                 .then(response => response.json())
@@ -152,15 +165,7 @@
                             const uptimeSecondsCell = document.createElement('td');
 
                             if (metrics) {
-                                if (metrics.batteryLevel !== undefined) {
-                                    const batteryProgress = document.createElement('progress');
-                                    batteryProgress.value = metrics.batteryLevel;
-                                    batteryProgress.max = 100;
-                                    batteryLevelCell.appendChild(batteryProgress);
-                                    batteryLevelCell.appendChild(document.createTextNode(` ${metrics.batteryLevel}%`));
-                                } else {
-                                    batteryLevelCell.textContent = 'N/A';
-                                }
+                                createProgressBar(batteryLevelCell, metrics.batteryLevel);
                                 channelUtilizationCell.textContent = metrics.channelUtilization || 'N/A';
                                 airUtilTxCell.textContent = metrics.airUtilTx || 'N/A';                                
                                 uptimeSecondsCell.textContent = metrics.uptimeSeconds || 'N/A';
