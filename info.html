@@ -86,17 +86,18 @@
             }
         }
 
-        function createMeter(node, level, low = 20, optimum = 90, high = 70, min = 0, max = 100) {
+        function createMeter(node, level, min = 0, max = 100, low = 20, high = 70, optimum = 90, suffix = "%" ) {
             if (level) {
                 const meter = document.createElement('meter');
                 meter.value = level;
                 meter.max = max;
+                meter.min = min;
                 meter.low = low;
                 meter.optimum = optimum;
                 meter.high = high;
 
                 node.appendChild(meter);
-                node.appendChild(document.createTextNode(` ${level}%`));
+                node.appendChild(document.createTextNode(` ${level}${suffix}`));
             } else {
                 node.textContent = 'N/A';
             }
@@ -147,7 +148,7 @@
                     row.appendChild(roleCell);
 
                     const snrCell = document.createElement('td');
-                    snrCell.textContent = node.snr;
+                    createMeter(snrCell, node.snr, -30, 20, -15, -2, 0, " dB");
                     row.appendChild(snrCell);
 
                     const hopsCell = document.createElement('td');
