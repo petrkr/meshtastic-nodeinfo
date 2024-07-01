@@ -20,7 +20,16 @@
     </style>
 </head>
 <body>
-    <h1>Device Info Table</h1>
+    <h1>Meshtastic node info</h1>
+    <strong>Node name:</strong> <span id="nodeOwner">Node name: </span>
+    <h3>Metadata</h3>
+    <ul>
+        <li>Firmware Version: <span id="firmwareVersion"></span></li>
+        <li>Device State Version: <span id="deviceStateVersion"></span></li>
+        <li>Role: <span id="deviceRole"></span></li>
+        <li>Hardware Model: <span id="hwModel"></span></li>
+    </ul>
+    <h3>Nodes on this node</h3>
     <table id="infoTable">
         <thead>
             <tr>
@@ -73,6 +82,13 @@
             } else {
                 node.textContent = 'N/A';
             }
+        }
+
+        function processMetadata(data) {
+            document.querySelector('#firmwareVersion').textContent = data.metadata.firmwareVersion;
+            document.querySelector('#deviceStateVersion').textContent = data.metadata.deviceStateVersion;
+            document.querySelector('#deviceRole').textContent = data.metadata.role;
+            document.querySelector('#hwModel').textContent = data.metadata.hwModel;
         }
 
         function processNodes(data) {
@@ -183,6 +199,8 @@
             fetch('info.json')
                 .then(response => response.json())
                 .then(data => {
+                    document.querySelector('#nodeOwner').textContent = data.owner;
+                    processMetadata(data);
                     processNodes(data);
                 })
                 .catch(error => console.error('Error loading JSON:', error));
