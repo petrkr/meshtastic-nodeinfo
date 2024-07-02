@@ -65,6 +65,8 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         var map = L.map('map').setView([50.092, 14.48], 11);
+        var mapMarkers = {};
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
@@ -105,6 +107,14 @@
             shadowSize: [41, 41]
         });
 
+        function showMapMarker(event, nodeId) {
+            event.preventDefault();
+            var marker = mapMarkers[nodeId];
+            map.setView(marker.getLatLng(), 13);
+            marker.openPopup();
+
+            document.getElementById('map').scrollIntoView({ behavior: 'smooth' });
+        }
 
         function formatTimeAgo(lastHeardTimestamp) {
             const lastHeardDate = new Date(lastHeardTimestamp * 1000);
@@ -212,8 +222,8 @@
                     if (position) {
                         if (position.latitude && position.longitude) {
                             const positionLink = document.createElement('a');
-                            positionLink.href = `https://www.google.com/maps?q=${position.latitude},${position.longitude}`;
-                            positionLink.target = '_blank';
+                            positionLink.href = `#`;
+                            positionLink.onclick = () => showMapMarker(event, nodeId);
                             positionLink.textContent = "Map" || 'N/A';
                             positionCell.appendChild(positionLink);
 
@@ -228,9 +238,11 @@
                                 icon = mapBlueIcon;
                             }
 
-                            L.marker([position.latitude, position.longitude], {icon: icon})
+                            var marker = L.marker([position.latitude, position.longitude], {icon: icon})
                                 .addTo(map)
                                 .bindPopup(user.longName);
+                            mapMarkers[nodeId] = marker;
+
                         }
                         else {
                             positionCell.textContent = 'N/A';
