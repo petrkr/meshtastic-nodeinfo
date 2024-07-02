@@ -41,8 +41,7 @@
                 <th>Role</th>
                 <th>SNR</th>
                 <th>Hops</th>
-                <th>Latitude</th>
-                <th>Longitude</th>
+                <th>Position</th>
                 <th>Altitude</th>
                 <th>Time</th>
                 <th>Last Heard</th>
@@ -155,28 +154,20 @@
                     hopsCell.textContent = node.hopsAway;
                     row.appendChild(hopsCell);
 
-                    const latitudeCell = document.createElement('td');
-                    const longitudeCell = document.createElement('td');
+                    const positionCell = document.createElement('td');
                     const timeCell = document.createElement('td');
                     const altitudeCell = document.createElement('td');
 
                     if (position) {
                         if (position.latitude && position.longitude) {
-                            const latitudeLink = document.createElement('a');
-                            latitudeLink.href = `https://www.google.com/maps?q=${position.latitude},${position.longitude}`;
-                            latitudeLink.target = '_blank';
-                            latitudeLink.textContent = position.latitude || 'N/A';
-                            latitudeCell.appendChild(latitudeLink);
-
-                            const longitudeLink = document.createElement('a');
-                            longitudeLink.href = `https://www.google.com/maps?q=${position.latitude},${position.longitude}`;
-                            longitudeLink.target = '_blank';
-                            longitudeLink.textContent = position.longitude || 'N/A';
-                            longitudeCell.appendChild(longitudeLink)
+                            const positionLink = document.createElement('a');
+                            positionLink.href = `https://www.google.com/maps?q=${position.latitude},${position.longitude}`;
+                            positionLink.target = '_blank';
+                            positionLink.textContent = "Map" || 'N/A';
+                            positionCell.appendChild(positionLink);
                         }
                         else {
-                            longitudeCell.textContent = 'N/A';
-                            latitudeCell.textContent = 'N/A';
+                            positionCell.textContent = 'N/A';
                         }
 
                         altitudeCell.textContent = position.altitude || 'N/A';
@@ -184,14 +175,12 @@
                         const timeDate = new Date(position.time * 1000);
                         timeCell.textContent = timeDate.toLocaleString();
                     } else {
-                        latitudeCell.textContent = 'N/A';
-                        longitudeCell.textContent = 'N/A';
+                        positionCell.textContent = 'N/A';
                         altitudeCell.textContent = 'N/A';
                         timeCell.textContent = 'N/A';
                     }
 
-                    row.appendChild(latitudeCell);
-                    row.appendChild(longitudeCell);
+                    row.appendChild(positionCell);
                     row.appendChild(altitudeCell);
                     row.appendChild(timeCell);
 
