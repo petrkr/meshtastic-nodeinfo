@@ -69,6 +69,43 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
+        var mapRedIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        var mapGreenIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        var mapBlueIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        var mapBlackIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-black.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+
         function formatTimeAgo(lastHeardTimestamp) {
             const lastHeardDate = new Date(lastHeardTimestamp * 1000);
             const secondsAgo = Math.floor((Date.now() - lastHeardDate.getTime()) / 1000);
@@ -180,7 +217,18 @@
                             positionLink.textContent = "Map" || 'N/A';
                             positionCell.appendChild(positionLink);
 
-                            L.marker([position.latitude, position.longitude])
+                            var icon;
+                            if (user.role === 'ROUTER') {
+                                icon = mapGreenIcon;
+                            } else if (user.role === 'ROUTER_CLIENT') {
+                                icon = mapRedIcon;
+                            } else if (user.role === 'CLIENT_MUTE') {
+                                icon = mapBlackIcon;
+                            } else {
+                                icon = mapBlueIcon;
+                            }
+
+                            L.marker([position.latitude, position.longitude], {icon: icon})
                                 .addTo(map)
                                 .bindPopup(user.longName);
                         }
