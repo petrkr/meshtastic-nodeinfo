@@ -3,7 +3,13 @@ from meshtastic.tcp_interface import TCPInterface
 from meshtastic.util import message_to_json, convert_mac_addr, remove_keys_from_dict
 import json
 
-host="10.200.0.104"
+
+if len(sys.argv) < 2:
+    print("Usage: python info.py <host>")
+    sys.exit(1)
+
+
+host=sys.argv[1]
 
 node = TCPInterface(host)
 

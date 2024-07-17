@@ -289,8 +289,9 @@
             }
         }
 
+        const infoUrl = 'info.json?_=' + new Date().getTime();
         document.addEventListener('DOMContentLoaded', () => {
-            fetch('info.json')
+            fetch(infoUrl)
                 .then(response => response.json())
                 .then(data => {
                     document.querySelector('#nodeOwner').textContent = data.owner;
