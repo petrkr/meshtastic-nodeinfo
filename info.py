@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 from meshtastic.tcp_interface import TCPInterface
 from meshtastic.util import message_to_json, convert_mac_addr, remove_keys_from_dict

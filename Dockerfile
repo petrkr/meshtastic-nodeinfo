@@ -4,7 +4,8 @@ RUN pip install --upgrade pip && \
     pip install meshtastic
 
 ADD info.py /app/
+RUN chmod +x /app/info.py
 
 WORKDIR /app
 
-CMD ["python", "info.py"]
+ENTRYPOINT [ "/app/info.py" ]
