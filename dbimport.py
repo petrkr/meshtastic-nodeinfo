@@ -16,7 +16,7 @@ class BaseModel(Model):
 class Node(BaseModel):
     id = CharField(primary_key=True)
     num = IntegerField()
-    lastHeard = IntegerField()
+    lastHeard = IntegerField(null=True)
 
 class User(BaseModel):
     node_id = ForeignKeyField(Node, backref='user', primary_key=True)
@@ -50,7 +50,7 @@ def insert_or_update_node_data(data):
 
         node, created = Node.get_or_create(
             id=key, num=value["num"],
-            defaults={"lastHeard": value["lastHeard"]})
+            defaults={"lastHeard": value["lastHeard"] if "lastHeard" in value else None})
         if not created:
             setattr(node, "lastHeard", value["lastHeard"])                                            
             node.save()
