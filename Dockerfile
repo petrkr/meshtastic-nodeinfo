@@ -1,10 +1,10 @@
 FROM python:3.12-slim
 
 RUN pip install --upgrade pip && \
-    pip install meshtastic
+    pip install meshtastic peewee
 
-ADD info.py /app/
-RUN chmod +x /app/info.py
+ADD info.py dbimport.py /app/
+RUN chmod +x /app/info.py /app/dbimport.py
 
 WORKDIR /app
 
