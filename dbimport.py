@@ -43,6 +43,7 @@ class DeviceMetrics(BaseModel):
 
 def insert_or_update_node_data(data):
     for key, value in data.items():
+        print(f"Processing node {key}")
         user_data = value["user"]
         position_data = value["position"] if "position" in value else None
         device_metrics_data = value["deviceMetrics"] if "deviceMetrics" in value else None
@@ -79,9 +80,13 @@ def insert_or_update_node_data(data):
                     setattr(devMetrics, attr, val)
                 devMetrics.save()
 
-db.connect()
-db.create_tables([Node, User, Position, DeviceMetrics])
+def main():
+    db.connect()
+    db.create_tables([Node, User, Position, DeviceMetrics])
 
-insert_or_update_node_data(json_data)
+    insert_or_update_node_data(json_data)
 
-db.close()
+    db.close()
+
+if __name__ == '__main__':
+    main()
