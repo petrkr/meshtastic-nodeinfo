@@ -6,8 +6,7 @@ import json
 db = SqliteDatabase('nodes.db')
 
 infojson = open('info.json')
-
-json_data = json.load(infojson)['nodes']
+json_data = json.load(infojson)
 
 class BaseModel(Model):
     class Meta:
@@ -42,6 +41,32 @@ class DeviceMetrics(BaseModel):
     channelUtilization = FloatField(null=True)
     airUtilTx = FloatField()
     uptimeSeconds = IntegerField(null=True)
+
+class Metadata(BaseModel):
+    owner = CharField()
+    firmwareVersion = CharField()
+    deviceStateVersion = IntegerField()
+    canShutdown = BooleanField()
+    hasWifi = BooleanField()
+    hasBluetooth = BooleanField()
+    positionFlags = IntegerField()
+    hwModel = CharField()
+    hasEthernet = BooleanField()
+    role = CharField()
+    hasRemoteHardware = BooleanField()
+
+
+def insert_or_update_metadata(owner, metadata):
+    data = metadata
+    data["owner"] = owner
+
+    metadata, created = Metadata.get_or_create(owner=data["owner"],
+                                               defaults=data)
+    if not created:
+        for attr, val in data.items():
+            setattr(metadata, attr, val)
+        metadata.save()
+
 
 def insert_or_update_node_data(data):
     for key, value in data.items():
@@ -90,9 +115,10 @@ def insert_or_update_node_data(data):
 
 def main():
     db.connect()
-    db.create_tables([Node, User, Position, DeviceMetrics])
+    db.create_tables([Node, User, Position, DeviceMetrics, Metadata])
 
-    insert_or_update_node_data(json_data)
+    insert_or_update_metadata(json_data['owner'], json_data['metadata'])
+    insert_or_update_node_data(json_data['nodes'])
 
     db.close()
 
