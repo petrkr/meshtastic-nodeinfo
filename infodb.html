@@ -165,10 +165,11 @@
         }
 
         function processMetadata(data) {
-            document.querySelector('#firmwareVersion').textContent = data.metadata.firmwareVersion;
-            document.querySelector('#deviceStateVersion').textContent = data.metadata.deviceStateVersion;
-            document.querySelector('#deviceRole').textContent = data.metadata.role;
-            document.querySelector('#hwModel').textContent = data.metadata.hwModel;
+            document.querySelector('#nodeOwner').textContent = data[0][0];
+            document.querySelector('#firmwareVersion').textContent = data[0][1];
+            document.querySelector('#deviceStateVersion').textContent = data[0][2];
+            document.querySelector('#deviceRole').textContent = data[0][3];
+            document.querySelector('#hwModel').textContent = data[0][4];
         }
 
         function processNodes(nodes) {
@@ -291,9 +292,11 @@
             const uInt8Array = new Uint8Array(arrayBuffer);
 
             const db = new SQL.Database(uInt8Array);
-            const result = db.exec("SELECT user.id, longName, shortName, macaddr, hwModel, role, latitude, longitude, altitude, time, lastHeard, batteryLevel, channelUtilization, airUtilTx, uptimeSeconds, snr, hopsAway FROM node LEFT JOIN devicemetrics ON node.id = devicemetrics.node_id LEFT JOIN position ON node.id = position.node_id LEFT JOIN  user ON node.id = user.node_id;");
+            const metadata = db.exec("SELECT owner, firmwareVersion, deviceStateVersion, role, hwModel from metadata LIMIT 1;");
+            const nodes = db.exec("SELECT user.id, longName, shortName, macaddr, hwModel, role, latitude, longitude, altitude, time, lastHeard, batteryLevel, channelUtilization, airUtilTx, uptimeSeconds, snr, hopsAway FROM node LEFT JOIN devicemetrics ON node.id = devicemetrics.node_id LEFT JOIN position ON node.id = position.node_id LEFT JOIN  user ON node.id = user.node_id;");
 
-            processNodes(result[0].values);
+            processMetadata(metadata[0].values);
+            processNodes(nodes[0].values);
 
 //            fetch(infoUrl)
   //              .then(response => response.json())
