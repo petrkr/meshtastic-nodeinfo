@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Info Table</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.1/sql-wasm.js"></script>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Meshtastic node info</h1>
+    <strong>Node name:</strong> <span id="nodeOwner">Node name: </span>
+    <h3>Metadata</h3>
+    <ul>
+        <li>Firmware Version: <span id="firmwareVersion"></span></li>
+        <li>Device State Version: <span id="deviceStateVersion"></span></li>
+        <li>Role: <span id="deviceRole"></span></li>
+        <li>Hardware Model: <span id="hwModel"></span></li>
+    </ul>
+    <h3>Nodes on this node</h3>
+    <table id="infoTable">
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>Long Name</th>
+                <th>Short Name</th>
+                <th>MAC Address</th>
+                <th>HW Model</th>
+                <th>Role</th>
+                <th>SNR</th>
+                <th>Hops</th>
+                <th>Position</th>
+                <th>Altitude</th>
+                <th>Time</th>
+                <th>Last Heard</th>
+                <th>Battery Level</th>
+                <th>Channel Utilization</th>
+                <th>Air Util Tx</th>
+                <th>Uptime Seconds</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <h3>Nodes in map view</h3>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([50.092, 14.48], 11);
+        var mapMarkers = {};
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var mapRedIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        var mapGreenIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        var mapBlueIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        var mapBlackIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-black.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        function showMapMarker(event, nodeId) {
+            event.preventDefault();
+            var marker = mapMarkers[nodeId];
+            map.setView(marker.getLatLng(), 13);
+            marker.openPopup();
+
+            document.getElementById('map').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function formatTimeAgo(lastHeardTimestamp) {
+            const lastHeardDate = new Date(lastHeardTimestamp * 1000);
+            const secondsAgo = Math.floor((Date.now() - lastHeardDate.getTime()) / 1000);
+
+            if (secondsAgo < 60) {
+                return `${secondsAgo} second${secondsAgo !== 1 ? 's' : ''} ago`;
+            } else if (secondsAgo < 3600) {
+                const minutesAgo = Math.floor(secondsAgo / 60);
+                return `${minutesAgo} minute${minutesAgo !== 1 ? 's' : ''} ago`;
+            } else if (secondsAgo < 86400) {
+                const hoursAgo = Math.floor(secondsAgo / 3600);
+                return `${hoursAgo} hour${hoursAgo !== 1 ? 's' : ''} ago`;
+            } else {
+                return lastHeardDate.toLocaleString();
+            }
+        }
+
+        function createProgressBar(node, level, max = 100) {
+            if (level) {
+                const progress = document.createElement('progress');
+                progress.value = level;
+                progress.max = max;
+
+                node.appendChild(progress);
+                node.appendChild(document.createTextNode(` ${level}%`));
+            } else {
+                node.textContent = 'N/A';
+            }
+        }
+
+        function createMeter(node, level, min = 0, max = 100, low = 20, high = 70, optimum = 90, suffix = "%" ) {
+            if (level) {
+                const meter = document.createElement('meter');
+                meter.value = level;
+                meter.max = max;
+                meter.min = min;
+                meter.low = low;
+                meter.optimum = optimum;
+                meter.high = high;
+
+                node.appendChild(meter);
+                node.appendChild(document.createTextNode(` ${level}${suffix}`));
+            } else {
+                node.textContent = 'N/A';
+            }
+        }
+
+        function processMetadata(data) {
+            document.querySelector('#firmwareVersion').textContent = data.metadata.firmwareVersion;
+            document.querySelector('#deviceStateVersion').textContent = data.metadata.deviceStateVersion;
+            document.querySelector('#deviceRole').textContent = data.metadata.role;
+            document.querySelector('#hwModel').textContent = data.metadata.hwModel;
+        }
+
+        function processNodes(nodes) {
+            const tableBody = document.querySelector('#infoTable tbody');;
+
+            nodes.forEach(node => {
+                const row = document.createElement('tr');
+
+                const userIdCell = document.createElement('td');
+                userIdCell.textContent = node[0]
+                row.appendChild(userIdCell);
+
+                const longNameCell = document.createElement('td');
+                longNameCell.textContent = node[1];
+                row.appendChild(longNameCell);
+
+                const shortNameCell = document.createElement('td');
+                shortNameCell.textContent = node[2];
+                row.appendChild(shortNameCell);
+
+                const macaddrCell = document.createElement('td');
+                macaddrCell.textContent = node[3];
+                row.appendChild(macaddrCell);
+
+                const hwModelCell = document.createElement('td');
+                hwModelCell.textContent = node[4];
+                row.appendChild(hwModelCell);
+
+                const roleCell = document.createElement('td');
+                roleCell.textContent = node[5];
+                row.appendChild(roleCell);
+
+                const snrCell = document.createElement('td');
+                createMeter(snrCell, node[15], -30, 20, -15, -2, 0, " dB");
+                row.appendChild(snrCell);
+
+                const hopsCell = document.createElement('td');
+                hopsCell.textContent = node[16];
+                row.appendChild(hopsCell);
+
+                const positionCell = document.createElement('td');
+                const timeCell = document.createElement('td');
+                const altitudeCell = document.createElement('td');
+
+                if (node[6]) {
+                    if (node[6] && node[7]) {
+                        const positionLink = document.createElement('a');
+                        positionLink.href = `#`;
+                        positionLink.onclick = () => showMapMarker(event, node[0]);
+                        positionLink.textContent = "Map" || 'N/A';
+                        positionCell.appendChild(positionLink);
+
+                        var icon;
+                        if (node[5] === 'ROUTER') {
+                            icon = mapGreenIcon;
+                        } else if (node[5] === 'ROUTER_CLIENT') {
+                            icon = mapRedIcon;
+                        } else if (node[5] === 'CLIENT_MUTE') {
+                            icon = mapBlackIcon;
+                        } else {
+                            icon = mapBlueIcon;
+                        }
+
+                        var marker = L.marker([node[6], node[7]], {icon: icon})
+                            .addTo(map)
+                            .bindPopup(node[1]);
+                        mapMarkers[node[0]] = marker;
+
+                    }
+                    else {
+                        positionCell.textContent = 'N/A';
+                    }
+
+                    altitudeCell.textContent = node[8] || 'N/A';
+
+                    const timeDate = new Date(node[9] * 1000);
+                    timeCell.textContent = timeDate.toLocaleString();
+                } else {
+                    positionCell.textContent = 'N/A';
+                    altitudeCell.textContent = 'N/A';
+                    timeCell.textContent = 'N/A';
+                }
+
+                row.appendChild(positionCell);
+                row.appendChild(altitudeCell);
+                row.appendChild(timeCell);
+
+                const lastHeardCell = document.createElement('td');
+                lastHeardCell.textContent = formatTimeAgo(node[10])
+                row.appendChild(lastHeardCell);
+
+                const batteryLevelCell = document.createElement('td');
+                const channelUtilizationCell = document.createElement('td');
+                const airUtilTxCell = document.createElement('td');
+                const uptimeSecondsCell = document.createElement('td');
+
+                createMeter(batteryLevelCell, node[11]);
+                createProgressBar(channelUtilizationCell, node[12]);
+                createProgressBar(airUtilTxCell, node[13]);
+                uptimeSecondsCell.textContent = node[14] || 'N/A';
+                
+                row.appendChild(batteryLevelCell);
+                row.appendChild(channelUtilizationCell);
+                row.appendChild(airUtilTxCell);
+                row.appendChild(uptimeSecondsCell);
+
+
+                tableBody.appendChild(row);
+            
+            });
+        }
+
+        const nodesUrl = 'nodes.db?_=' + new Date().getTime();
+        document.addEventListener('DOMContentLoaded', async() => {
+            const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.1/${file}` });
+
+             // Fetch the database file from the server
+            const response = await fetch(nodesUrl);
+            const arrayBuffer = await response.arrayBuffer();
+            const uInt8Array = new Uint8Array(arrayBuffer);
+
+            const db = new SQL.Database(uInt8Array);
+            const result = db.exec("SELECT user.id, longName, shortName, macaddr, hwModel, role, latitude, longitude, altitude, time, lastHeard, batteryLevel, channelUtilization, airUtilTx, uptimeSeconds, snr, hopsAway FROM node LEFT JOIN devicemetrics ON node.id = devicemetrics.node_id LEFT JOIN position ON node.id = position.node_id LEFT JOIN  user ON node.id = user.node_id;");
+
+            processNodes(result[0].values);
+
+//            fetch(infoUrl)
+  //              .then(response => response.json())
+    //            .then(data => {
+                    //document.querySelector('#nodeOwner').textContent = data.owner;
+                    //processMetadata(data);
+      //              processNodes(data);
+        //        })
+          //      .catch(error => console.error('Error loading JSON:', error));
+        });
+    </script>
+</body>
+</html>
