@@ -15,7 +15,9 @@ class BaseModel(Model):
 
 class Node(BaseModel):
     id = CharField(primary_key=True)
-    num = IntegerField()
+    num = IntegerField(null=True)
+    snr = FloatField(null=True)
+    hopsAway = IntegerField()
     lastHeard = IntegerField(null=True)
 
 class User(BaseModel):
@@ -47,12 +49,18 @@ def insert_or_update_node_data(data):
         user_data = value["user"]
         position_data = value["position"] if "position" in value else None
         device_metrics_data = value["deviceMetrics"] if "deviceMetrics" in value else None
+        if "role" not in user_data:
+            user_data["role"] = "CLIENT"
 
         node, created = Node.get_or_create(
             id=key, num=value["num"],
-            defaults={"lastHeard": value["lastHeard"] if "lastHeard" in value else None})
+            defaults={"lastHeard": value["lastHeard"] if "lastHeard" in value else None,
+                      "snr": value["snr"] if "snr" in value else None,
+                      "hopsAway": value["hopsAway"] if "hopsAway" in value else None})
         if not created:
             setattr(node, "lastHeard", value["lastHeard"] if "lastHeard" in value else None)
+            setattr(node, "snr", value["snr"] if "snr" in value else None)
+            setattr(node, "hopsAway", value["hopsAway"] if "hopsAway" in value else None)
             node.save()
 
         user, created = User.get_or_create(id=user_data["id"],
