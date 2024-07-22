@@ -52,7 +52,7 @@ def insert_or_update_node_data(data):
             id=key, num=value["num"],
             defaults={"lastHeard": value["lastHeard"] if "lastHeard" in value else None})
         if not created:
-            setattr(node, "lastHeard", value["lastHeard"])                                            
+            setattr(node, "lastHeard", value["lastHeard"] if "lastHeard" in value else None)
             node.save()
 
         user, created = User.get_or_create(id=user_data["id"],
