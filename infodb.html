@@ -293,7 +293,7 @@
 
             const db = new SQL.Database(uInt8Array);
             const metadata = db.exec("SELECT owner, firmwareVersion, deviceStateVersion, role, hwModel from metadata LIMIT 1;");
-            const nodes = db.exec("SELECT user.id, longName, shortName, macaddr, hwModel, role, latitude, longitude, altitude, time, lastHeard, batteryLevel, channelUtilization, airUtilTx, uptimeSeconds, snr, hopsAway FROM node LEFT JOIN devicemetrics ON node.id = devicemetrics.node_id LEFT JOIN position ON node.id = position.node_id LEFT JOIN  user ON node.id = user.node_id;");
+            const nodes = db.exec("SELECT user.id, longName, shortName, macaddr, hwModel, role, latitude, longitude, altitude, time, lastHeard, batteryLevel, channelUtilization, airUtilTx, uptimeSeconds, snr, hopsAway FROM node LEFT JOIN devicemetrics ON node.id = devicemetrics.node_id LEFT JOIN position ON node.id = position.node_id LEFT JOIN  user ON node.id = user.node_id order by lastHeard DESC;");
 
             processMetadata(metadata[0].values);
             processNodes(nodes[0].values);
